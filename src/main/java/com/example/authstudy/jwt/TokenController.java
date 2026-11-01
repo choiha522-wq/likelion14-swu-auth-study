@@ -10,10 +10,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping({"/auth", "/api/auth"})
 public class TokenController {
     private final UserDetailsService users;
     private final PasswordEncoder passwordEncoder;
@@ -32,7 +33,10 @@ public class TokenController {
             if (!passwordEncoder.matches(request.password(), user.getPassword())) {
                 return loginFailed();
             }
-            return ResponseEntity.ok(Map.of("accessToken", jwtProvider.createAccessToken(user.getUsername())));
+            List<String> roles = user.getAuthorities().stream()
+                    .map(authority -> authority.getAuthority().replaceFirst("^ROLE_", ""))
+                    .toList();
+            return ResponseEntity.ok(Map.of("accessToken", jwtProvider.createAccessToken(user.getUsername(), roles)));
         } catch (UsernameNotFoundException | NullPointerException e) {
             return loginFailed();
         }

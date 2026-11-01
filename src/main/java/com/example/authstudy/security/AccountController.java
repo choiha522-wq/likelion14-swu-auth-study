@@ -8,7 +8,7 @@ import java.util.Map;
 
 @RestController
 public class AccountController {
-    @GetMapping("/account/me")
+    @GetMapping({"/account/me", "/api/account/me"})
     public Map<String, Object> me(Authentication authentication) {
         return Map.of("username", authentication.getName(), "authorities", authentication.getAuthorities());
     }
