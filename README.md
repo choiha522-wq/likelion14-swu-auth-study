@@ -9,7 +9,13 @@
 - `GET /session/me`: 세션 로그인 사용자 확인
 - `POST /session/logout`: 서버 세션 무효화
 
-고정 계정은 동작 원리 학습 전용이며 실제 서비스에 사용하면 안 됩니다.
+고정 계정은 1주차 동작 원리 학습 전용이며 실제 서비스에 사용하면 안 됩니다.
+
+## 2주차: Spring Security 세션 로그인
+
+`POST /signup`에 JSON `{"username":"tester","password":"password123"}`를 보내 가입한 다음, `/login`의 기본 로그인 폼에서 로그인합니다. 로그인 성공 후 세션 쿠키가 발급되고 `/account/me`에서 인증 사용자와 권한을 확인할 수 있습니다. 사용자 저장소는 프로세스 메모리이므로 서버를 재시작하면 가입 정보가 사라집니다.
+
+CSRF 방어를 켜 둔 상태입니다. JSON POST 요청에는 `XSRF-TOKEN` 쿠키 값을 `X-XSRF-TOKEN` 헤더로 보내야 합니다. 브라우저 폼 로그인에는 Spring Security 기본 로그인 페이지를 사용할 수 있습니다.
 
 ```bash
 mvn spring-boot:run
