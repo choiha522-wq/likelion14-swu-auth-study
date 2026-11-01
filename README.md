@@ -32,6 +32,14 @@ JWT 전용 경로는 `/api/**`로 분리했습니다. `/api/auth/login`에서 �
 - 토큰 누락·만료·위조는 401, 권한 부족은 403 JSON 응답
 - 가입한 계정은 `USER` 역할을 받습니다. 기본 메모리 계정 `admin / admin1234`는 `USER`, `ADMIN` 역할을 가집니다.
 
+## 5주차: Refresh Token 재발급·로그아웃
+
+로그인 응답은 Access Token을 JSON으로 반환하고, Refresh Token은 `HttpOnly`, `Secure`, `SameSite=Strict` 쿠키로 전달합니다. `/api/auth/reissue`는 서명·만료·토큰 종류를 확인하고 인메모리 저장소의 SHA-256 해시와 대조한 뒤 새 Access/Refresh Token을 발급합니다. 성공하면 저장된 Refresh Token 해시를 원자적으로 교체하므로 이전 토큰 재사용은 실패합니다. `/api/auth/logout`은 서버 저장값을 지우고 쿠키를 만료시킵니다.
+
+재발급·로그아웃 요청에는 `X-Refresh-Request: true` 헤더를 함께 보내야 합니다. Refresh 쿠키는 브라우저가 자동 전송하므로 `SameSite=Strict`와 사용자 정의 헤더를 사용하며, 다른 출처를 허용하는 CORS 설정을 추가하지 않습니다. Refresh Token 저장소는 프로세스 메모리 기반이라 재시작 시 지워지며 다중 서버 운영용이 아닙니다.
+
+로컬 HTTP 테스트에서 쿠키가 전송되지 않는 경우, `JWT_COOKIE_SECURE=false`를 로컬 전용으로 설정할 수 있습니다. HTTPS가 아닌 공개·배포 환경에서 Secure를 끄면 안 됩니다.
+
 ```bash
 mvn spring-boot:run
 ```

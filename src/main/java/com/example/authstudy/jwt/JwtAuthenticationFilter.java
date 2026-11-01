@@ -30,6 +30,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             try {
                 Claims claims = jwtProvider.parse(header.substring(7));
+                if (!"access".equals(claims.get("tokenType", String.class))) {
+                    request.setAttribute(ERROR_ATTRIBUTE, "INVALID_TOKEN");
+                    chain.doFilter(request, response);
+                    return;
+                }
                 List<?> roles = claims.get("roles", List.class);
                 List<SimpleGrantedAuthority> authorities = roles == null ? List.of() : roles.stream()
                         .filter(String.class::isInstance).map(String.class::cast)
