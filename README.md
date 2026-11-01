@@ -17,6 +17,12 @@
 
 CSRF 방어를 켜 둔 상태입니다. JSON POST 요청에는 `XSRF-TOKEN` 쿠키 값을 `X-XSRF-TOKEN` 헤더로 보내야 합니다. 브라우저 폼 로그인에는 Spring Security 기본 로그인 페이지를 사용할 수 있습니다.
 
+## 3주차: JWT 구조와 발급
+
+`POST /auth/login`에 가입한 계정 정보를 보내면 HS256 서명 Access Token을 받습니다. `GET /auth/verify` 요청의 `Authorization: Bearer <토큰>` 헤더로 서명과 만료를 확인합니다. 현재 단계에서는 검증 API로 토큰 자체를 학습하며, JWT를 보호 API의 인증 수단으로 연결하는 작업은 4주차에서 합니다.
+
+JWT 서명 비밀 값은 `JWT_SECRET` 환경변수로 지정합니다. 로컬 기본값은 학습 편의를 위한 값이므로 실제 서비스에서는 사용하면 안 됩니다. 이 단계도 Spring Security의 CSRF 보호가 활성화되어 있어 `/auth/login` POST에는 CSRF 쿠키와 헤더가 필요합니다.
+
 ```bash
 mvn spring-boot:run
 ```

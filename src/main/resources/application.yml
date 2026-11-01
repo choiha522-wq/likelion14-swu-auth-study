@@ -1,0 +1,6 @@
+server:
+  port: 8080
+jwt:
+  # 로컬 학습 기본값입니다. 실제 환경에서는 반드시 충분히 긴 비밀 값을 환경변수로 전달하세요.
+  secret: ${JWT_SECRET:local-study-secret-key-must-be-at-least-32-bytes-long}
+  access-expiration-ms: 900000
