@@ -40,6 +40,31 @@ JWT 전용 경로는 `/api/**`로 분리했습니다. `/api/auth/login`에서 �
 
 로컬 HTTP 테스트에서 쿠키가 전송되지 않는 경우, `JWT_COOKIE_SECURE=false`를 로컬 전용으로 설정할 수 있습니다. HTTPS가 아닌 공개·배포 환경에서 Secure를 끄면 안 됩니다.
 
+## 6주차: 세션 vs JWT 비교 및 실습 마무리
+
+| 구분 | 세션 기반 인증 | JWT 기반 인증 |
+|---|---|---|
+| 인증 상태 | 서버 세션 저장소가 관리 | 서명된 Access Token을 요청마다 검증 |
+| 요청 확인 | 세션 ID로 저장소 조회 | 서명·만료·토큰 유형 검증 |
+| 로그아웃/폐기 | 세션 삭제로 즉시 무효화 가능 | Access Token은 만료 전 유효할 수 있음. 이 실습은 Refresh Token을 서버 저장소에서 폐기 |
+| 서버 확장 | 여러 서버가 세션 저장소를 공유해야 할 수 있음 | 검증 키와 설정 배포가 필요. Refresh Token 저장소도 공유해야 전체 인스턴스에서 회전·폐기가 일관됨 |
+| 운영 부담 | 세션 저장소의 확장·가용성 관리 | 키 교체, 토큰 수명, Refresh Token 폐기·회전과 저장 위치 관리 |
+
+JWT는 자동으로 더 안전하거나 완전히 무상태가 되는 방식이 아닙니다. 본 실습은 Refresh Token을 서버 메모리에 저장하므로 다중 인스턴스에서는 공용 저장소가 필요하고, Access Token을 즉시 폐기하지 않으므로 만료 시간 동안 유효합니다. 서비스 요구에 따라 세션을 선택해도 됩니다.
+
+자세한 비교 자료는 [`docs/session-vs-jwt.md`](docs/session-vs-jwt.md)를 참고하세요.
+
+## 실행 및 API 흐름
+
+1. JDK 21과 Maven을 설치한 뒤 저장소 루트에서 `mvn spring-boot:run`을 실행합니다.
+2. 로컬 HTTP에서 쿠키를 실습할 경우 PowerShell에서 `$env:JWT_COOKIE_SECURE='false'`로 설정합니다. HTTPS 환경에서는 이 설정을 하지 않습니다.
+3. `POST /api/auth/login`에 `{"username":"admin","password":"admin1234"}`를 보내고, 응답의 `accessToken`과 `refreshToken` 쿠키를 보관합니다.
+4. Access Token을 `Authorization: Bearer <토큰>` 헤더로 보내 `/api/account/me` 또는 `/api/admin/ping`에 접근합니다.
+5. Access Token을 갱신하려면 쿠키를 포함해 `POST /api/auth/reissue`로 요청하면서 `X-Refresh-Request: true`를 보냅니다. 성공하면 새 Access Token과 교체된 Refresh 쿠키를 받습니다. 이전 Refresh Token은 재사용할 수 없습니다.
+6. `POST /api/auth/logout`을 같은 헤더·쿠키와 함께 호출하면 서버의 Refresh Token과 브라우저 쿠키를 제거합니다. 이미 발급한 Access Token은 만료 전까지 유효합니다.
+
+> 기본 계정과 인메모리 저장소는 학습 전용입니다. 실제 서비스에서는 사용자 DB, 안전한 비밀키 관리, 다중 서버에서 공유되는 Refresh Token 저장소, 운영 환경에 맞는 CSRF/CORS 정책을 설계해야 합니다.
+
 ```bash
 mvn spring-boot:run
 ```
